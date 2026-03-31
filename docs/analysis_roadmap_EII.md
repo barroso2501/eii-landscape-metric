@@ -2,7 +2,23 @@
 ## Ordered sequence of analyses, inputs, outputs, and dependencies
 
 **Status:** Active planning document  
-**Last updated:** 2026-03-30
+**Last updated:** 2026-03-30 (rev. 2 — study domain and grid configuration finalized)
+
+---
+
+## Finalized configuration decisions
+
+These decisions are locked and apply to all phases:
+
+| Parameter | Decision |
+|---|---|
+| Study domain | Rectangle 1,500 × 1,500 km, ESRI:102033 (Albers Equal Area Conic) |
+| Domain corners | SW (200,000; 1,700,000) m — NE (1,700,000; 3,200,000) m |
+| Primary grid | Hexagonal, 20,000 ha (~15.2 km side) |
+| Scale sensitivity | 10,000 ha / 20,000 ha / 40,000 ha (ratio ×2 side, ×4 area) |
+| Shape sensitivity | Square, 20,000 ha (equivalent area to primary hex) |
+| Border cells | None — all cells fully contained within rectangular domain |
+| CRS | ESRI:102033 throughout; area equality guaranteed by Albers projection |
 
 ---
 
@@ -12,33 +28,58 @@ This roadmap organizes all analyses required for the EII paper into four sequent
 
 ---
 
-## Phase 1 — Grid Configuration (MAUP Foundation)
-*Purpose: Fix the methodological choices (shape, scale) before running the full pipeline. Results feed into all subsequent phases.*
+## Phase 1 — Grid Generation and Configuration (MAUP Foundation)
+*Purpose: Generate all required grids and fix the methodological choices (shape, scale) before running the full pipeline. Results feed into all subsequent phases.*
+
+### 1.0 — Generate all grids (prerequisite for all Phase 1 steps)
+- **Task:** Generate five hexagonal grids and one square grid within the rectangular domain (ESRI:102033).
+- **Grids to generate:**
+
+| Grid ID | Shape | Cell area | Side length | Approx. cells |
+|---|---|---|---|---|
+| HEX-10 | Hexagon | 10,000 ha | ~10.7 km | ~22,500 |
+| HEX-20 | Hexagon | 20,000 ha | ~15.2 km | ~11,250 |
+| HEX-40 | Hexagon | 40,000 ha | ~21.5 km | ~5,625 |
+| SQ-20  | Square  | 20,000 ha | ~14.1 km | ~11,250 |
+
+- **Tool:** QGIS (Vector → Research Tools → Create Grid) or Python (shapely + geopandas).
+- **Critical requirement:** grid must be generated entirely within the domain rectangle — no cells crossing the boundary. If the tool generates partial cells at the edge, clip and discard them.
+- **Output:** four shapefiles, one per grid, in ESRI:102033. Each cell must have a unique ID field (`ID_UNICO`).
+- **Complexity:** 🟢 Low
+- **Notes:** Document the exact cell count per grid after generation. Store all grids in `data/grids/` in the repository.
 
 ### 1.1 — Shape comparison: hexagon vs. square
-- **Input:** MapBiomas binary rasters (subset: 1985 and 2020); hexagonal grid (existing); square grid at equivalent cell area (to be generated).
-- **Output:** EII computed under both configurations for 1985 and 2020; 5×5 Area × EII frequency matrices for each configuration; difference matrix.
+- **Input:** MapBiomas binary rasters (1985 and 2020); HEX-20 and SQ-20 grids.
+- **Output per configuration:** EII and Area computed for 1985 and 2020; 5×5 Area × EII frequency matrices; CV of EII across cells.
+- **Three-dimensional comparison (see Paper Outline Section 3.7.1):**
+  - Dimension 1: convergence of aggregated 5×5 matrices between HEX-20 and SQ-20.
+  - Dimension 2: CV of EII per unit area (expected: CV_hex < CV_sq).
+  - Dimension 3: directional isotropy documented analytically (6 × 60° vs. 4 × 90°).
 - **Key question:** Do the two geometries produce substantively different aggregated distributions?
-- **Complexity:** 🟡 Medium (requires generating square grid and running pipeline twice)
-- **Deliverable:** Fig. 6 component (hex vs. square panel)
-- **Notes:** Use the same total cell area for comparison. Document the directional sampling coverage formally (6 × 60° vs. 4 × 90°).
+- **Complexity:** 🟡 Medium
+- **Deliverable:** Fig. 6 component (hex vs. square panel); statistical argument for hex preference.
+- **Note on perimeter difference:** P_square ≈ 56.6 km vs. P_hexagon ≈ 54.4 km for 20,000 ha cells — report explicitly, not as a limitation but as a known geometric property.
 
 ### 1.2 — Scale sensitivity: multi-resolution comparison
-- **Input:** MapBiomas binary rasters (1985 and 2020); hexagonal grids at 2–3 target cell sizes.
-- **Output:** EII and Area distributions per scale; CV of EII as a function of perimeter length (statistical stability criterion); recommended scale with justification.
-- **Key question:** At what scale is the EII estimator most stable while preserving spatial resolution?
-- **Complexity:** 🟡 Medium (requires generating alternative grids and running pipeline)
-- **Deliverable:** Supplementary or Fig. 6 component; documented scale choice for Section 3.3
-- **Decision point:** The scale chosen here becomes fixed for all subsequent analyses.
+- **Input:** MapBiomas binary rasters (1985 and 2020); HEX-10, HEX-20, HEX-40 grids.
+- **Output:** EII and Area distributions per scale; CV of EII as function of perimeter length; 5×5 matrices per scale; difference matrices between scales.
+- **Key question:** How does the Area × EII joint distribution change across the three ecological scales?
+- **Expected pattern:** finer scale (HEX-10) shows higher variance and more fragmented spatial patterns; coarser scale (HEX-40) shows smoother distributions with less spatial detail.
+- **Complexity:** 🟡 Medium
+- **Deliverable:** Fig. 6 component (scale comparison panel); confirms 20,000 ha as primary scale.
+- **Decision point:** If HEX-20 does not show better stability than HEX-10 and HEX-40, revisit scale selection before proceeding to Phase 2.
 
 ### 1.3 — Zoning sensitivity: systematic grid displacement (jitter)
-- **Input:** MapBiomas binary rasters (1985 and 2020); 25 grid realizations (original + 8 directions × 3 distances).
-- **Grid displacement distances:** 1/6, 1/3, and 1/2 of cell side length.
-- **Output:** EII computed for each of the 25 realizations; mean and SD of EII per cell; CV map across the Cerrado; mean ± SD of the 5×5 frequency matrix.
+- **Input:** MapBiomas binary rasters (1985 and 2020); 25 realizations of HEX-20 grid.
+- **Displacement design:**
+  - 8 directions: N, NE, E, SE, S, SW, W, NW
+  - 3 distances per direction: 1/6, 1/3, 1/2 of cell side length (~2.5, ~5.1, ~7.6 km for HEX-20)
+  - Total: 24 displaced grids + 1 original = 25 realizations
+- **Output:** EII for each realization; mean and SD of EII per cell position; CV map across the domain; mean ± SD of the 5×5 frequency matrix.
 - **Key question:** How stable are EII estimates across arbitrary grid placement choices?
 - **Complexity:** 🔴 High (25 pipeline runs; use parallel execution and checkpoint system)
-- **Deliverable:** Fig. 6 component (CV map); numerical robustness statement for Section 3.7.3
-- **Notes:** Run on the scale and shape selected in steps 1.1 and 1.2. Report the displacement distances as fractions of cell side length, not absolute meters, for generalizability.
+- **Deliverable:** Fig. 6 component (CV map); numerical robustness statement for Methods Section 3.7.3.
+- **Interpretation:** cells with high CV are located at abrupt landscape transition zones — report this as an ecologically informative result, not merely a methodological one.
 
 ---
 
@@ -46,16 +87,16 @@ This roadmap organizes all analyses required for the EII paper into four sequent
 *Purpose: Build the complete 40-year EII dataset for all cells. This is the core dataset for all subsequent analyses.*
 
 ### 2.1 — Run EII pipeline for all years (1985–2024)
-- **Input:** MapBiomas binary rasters for all 40 years; hexagonal grid (configuration fixed in Phase 1).
-- **Output:** Matrix of dimensions 19,183 cells × 40 years for EII (`w_i(t)`); checkpoint files per year.
+- **Input:** MapBiomas binary rasters for all 40 years; HEX-20 grid (configuration fixed in Phase 1).
+- **Output:** Matrix of dimensions ~11,250 cells × 40 years for EII (`w_i(t)`); checkpoint files per year.
 - **Complexity:** 🔴 High (40 pipeline runs; use existing checkpoint architecture)
-- **Notes:** Pipeline is already operational with checkpoint system. Estimated runtime should be documented. Quality check: verify nodata handling and border cell completeness ratio for all years.
+- **Notes:** Pipeline is already operational with checkpoint system. Estimated runtime should be documented. Quality check: verify nodata handling for all years — no border clipping issues since domain is rectangular.
 
 ### 2.2 — Assemble paired annual dataset
-- **Input:** EII matrix (2.1); Area matrix (already available, 19,183 × 40).
-- **Output:** Single consolidated dataset: 19,183 cells × 40 years × 2 metrics (Area and EII).
+- **Input:** EII matrix (2.1); Area matrix (to be computed for HEX-20 grid, same 40 years).
+- **Output:** Single consolidated dataset: ~11,250 cells × 40 years × 2 metrics (Area and EII).
 - **Complexity:** 🟢 Low
-- **Notes:** Verify alignment of cell IDs between the two matrices. Document border cells with completeness ratio < 0.8 as a quality flag.
+- **Notes:** Verify alignment of cell IDs between the two matrices. No completeness flags needed — all cells are geometrically complete within the rectangular domain.
 
 ---
 
@@ -169,16 +210,19 @@ Steps 1.3 (Jitter) and 3.5 (Change point) are methodologically important but can
 
 ---
 
-## Pending Decisions
+## Pending decisions
 
-| Decision | Options | Deadline |
+| Decision | Status | Notes |
 |---|---|---|
-| Target cell size | To be determined in step 1.2 | Before Phase 2 |
-| Changepoint penalty parameter | BIC (default) vs. manual | Before step 3.5 |
-| Snapshot years for matrices | 1985, 1995, 2004, 2012, 2020 (proposed) | Before step 3.3 |
-| Decoupling threshold | 0.5 (midpoint) vs. quantile-based | Before step 3.2 |
-| Target journal | Ecological Indicators (preliminary) | Before submission |
+| Target cell size | ✅ Resolved — 20,000 ha primary; 10,000 and 40,000 ha for sensitivity | |
+| Grid shape | ✅ Resolved — hexagonal primary; square for shape comparison | |
+| Study domain | ✅ Resolved — 1,500 × 1,500 km rectangle, ESRI:102033 | |
+| Snapshot years for matrices | ✅ Proposed — 1985, 1995, 2004, 2012, 2020 | Confirm against MapBiomas availability |
+| Changepoint penalty parameter | 🔲 Open — BIC (default) vs. manual | Decide before step 3.5 |
+| Decoupling threshold | 🔲 Open — 0.5 (midpoint) vs. quantile-based | Decide before step 3.2 |
+| Target journal | 🔲 Open — Ecological Indicators (preliminary) | Confirm before submission |
 
 ---
+
 
 *This document should be updated as each analytical step is completed. Record actual outputs, deviations from the plan, and decisions made during analysis.*
