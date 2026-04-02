@@ -216,10 +216,25 @@ Comparison structured across three explicit dimensions:
 - Implementation: Python `ruptures` library; penalty parameter via BIC.
 - Output: year(s) of structural break per cell for EII ($t^*_w$) and Area ($t^*_A$); temporal lag $\Delta_i = t^*_w - t^*_A$.
 
-### 3.9 Spatial autocorrelation of divergence
-- Global Moran's I computed annually on the binary divergence variable (Type I or Type II vs. coupled).
-- Queen contiguity spatial weights, row-standardized; 99 permutations.
-- Cumulative divergence trace: cells ever in divergent state across the full series.
+### 3.9 Spatial autocorrelation of compositional-configurational divergence
+
+**Variable selection — why divergence and not EII directly:**
+
+The EII of a cell is computed from its perimeter, which is shared with neighboring cells. This means adjacent cells sample overlapping sets of raster pixels when computing their respective EII values. As a consequence, the EII series of neighboring cells are structurally correlated by construction — even in a random landscape, adjacent cells would show similar EII values because they share border pixels.
+
+Computing Moran's I directly on EII would therefore produce inflated autocorrelation coefficients that reflect geometric overlap rather than true spatial clustering of landscape states.
+
+The compositional-configurational divergence variable $\delta_i(t) = w_i(t) - A_i(t)$ does not share this problem. The divergence between interior composition and interface connectivity is an emergent property of each cell individually: it depends on the specific spatial arrangement of habitat relative to both the interior and the boundary of that cell. Two neighboring cells may have similar EII values (because they share pixels) but very different divergence values (because their interior compositions differ). Moran's I on the divergence variable tests whether cells in similar landscape states — where composition and connectivity are misaligned — tend to be spatially clustered, which is the ecologically relevant question.
+
+**Implementation:**
+- Variable: binary classification — divergent (Type I or Type II = 1) vs. coupled (Coupled-High or Coupled-Low = 0) — per cell per year.
+- Spatial weights: Queen contiguity (cells sharing at least one vertex), row-standardized.
+- Test: Global Moran's I with 99 permutations for significance assessment.
+- Applied annually to the full 1985–2024 series.
+
+**Additional outputs:**
+- Moran's I time series: trend in spatial clustering of divergence over 40 years.
+- Cumulative divergence trace: cells ever in Type I or Type II state across the full series (binary map and % years in divergent state per cell).
 
 ### 3.10 Continuous divergence analysis (δ)
 - Annual distribution of $\delta_i(t)$ across cells.
@@ -325,6 +340,10 @@ Comparison structured across three explicit dimensions:
 - MapBiomas. (2024). Collection [X] of the Annual Land Use and Land Cover Maps of Brazil. *mapbiomas.org*.
 - McGarigal, K., & Marks, B.J. (1995). *FRAGSTATS: Spatial Pattern Analysis Program for Quantifying Landscape Structure*. USDA Forest Service.
 - Openshaw, S. (1984). *The Modifiable Areal Unit Problem*. Geo Books, Norwich.
+
+---
+
+*Document maintained as part of the EII project. Update after each analytical phase is completed.*
 
 ---
 
