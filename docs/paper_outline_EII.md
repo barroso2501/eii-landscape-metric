@@ -162,7 +162,7 @@ $$A_i(t) = \frac{\sum_{p \in C_i} \mathbf{1}[r_p(t) = 1]}{|C_i|}$$
 
 where $C_i$ is the set of valid pixels within cell $i$, $r_p(t)$ is the binary raster value of pixel $p$ at time $t$, and $|C_i|$ is the total count of valid pixels. Computed using `zonal_stats` with `stats=['count','sum']` on polygon interiors (`all_touched=False`).
 
-**Edge Interception Index (interface connectivity):**
+**Edge Interception Index — aggregated (interface connectivity):**
 
 $$w_i(t) = \frac{L_i^{\text{nat}}(t)}{P_i^{\text{obs}}(t)}$$
 
@@ -170,11 +170,49 @@ where $L_i^{\text{nat}}(t)$ is the count of perimeter pixels intercepting natura
 
 Both metrics $\in [0, 1]$.
 
+**Critical note on computation and cell boundaries:**
+
+The EII is computed from the cell's own perimeter intersecting the raster. It does not require the existence or state of neighboring cells — the raster provides pixel values independently of the grid topology. This has two important consequences:
+
+1. *Border cells are treated identically to interior cells.* A cell at the edge of the study domain has the same six segments as an interior cell; each segment samples whatever pixel values exist in the raster at that location. No completeness correction or exclusion is required.
+
+2. *The calculation is independent, but adjacent results are structurally correlated.* Although each cell's EII is computed independently, neighboring cells sample adjacent (and partially overlapping) sets of raster pixels along their shared boundary. This structural correlation must be accounted for in spatial autocorrelation analyses (see Section 3.9).
+
+**EII decomposed by segment:**
+
+Each hexagonal cell has six border segments at fixed orientations: 0°, 60°, 120°, 180°, 240°, 300°. The EII can be decomposed into a vector of six component values:
+
+$$\mathbf{w}_i(t) = [w_{i1}(t),\ w_{i2}(t),\ w_{i3}(t),\ w_{i4}(t),\ w_{i5}(t),\ w_{i6}(t)]$$
+
+where $w_{ij}(t) \in [0,1]$ is the proportion of segment $j$ of cell $i$ intercepting natural habitat at time $t$.
+
+The aggregated EII is the length-weighted mean of the six components (equivalent to the ratio of total natural contacts to total valid perimeter pixels). For hexagonal cells with equal side lengths, this reduces to the arithmetic mean:
+
+$$w_i(t) = \frac{1}{6} \sum_{j=1}^{6} w_{ij}(t)$$
+
+The **total interface connectivity** — the sum of the six components — has a distinct geometric interpretation:
+
+$$\Sigma w_i(t) = \sum_{j=1}^{6} w_{ij}(t) \in [0, 6]$$
+
+This represents the total length of connected interface expressed in units of full segments: a cell with $\Sigma w_i = 4.8$ has the equivalent of 4.8 fully connected sides, regardless of how that connectivity is distributed across the six directions. The aggregated EII relates to the total by $w_i = \Sigma w_i / 6$.
+
+**Five geometric properties of the segment vector:**
+
+| Property | Formula | Interpretation |
+|---|---|---|
+| 1. Total connectivity | $\Sigma w_i = \sum_j w_{ij}$ | Total connected interface in segment units [0, 6] |
+| 2. Mean connectivity | $\bar{w}_i = \Sigma w_i / 6$ | Aggregated EII [0, 1] |
+| 3. Isotropy | $\text{SD}(w_{ij})$ | Low = isotropic; high = directional connectivity |
+| 4. Directional gradient | $w_{ij} - w_{i,j+3}$ | Connectivity asymmetry between opposite sides (3 pairs) |
+| 5. Topological role | $N_k = \sum_j \mathbf{1}[w_{ij} > \tau]$ | Number of functionally connected sides above threshold $\tau$ |
+
+Properties 3 and 4 are analysed in Section 3.11 (segment decomposition analysis). Property 5 connects to graph-theoretic characterization of cells (hub, corridor, dead-end, isolate) — reserved for future work.
+
 **Connection to the line intercept method:**
-- Each of the six hexagonal border segments constitutes a systematic transect.
+- Each of the six border segments constitutes a systematic transect.
 - Each pixel contact with natural habitat is a "hit."
-- $w_i(t)$ is the hit rate along the perimeter transect — directly analogous to the cover estimator of Canfield (1941).
-- The six border segments of each hexagon sample six distinct directions (0°, 60°, 120°, 180°, 240°, 300°), providing near-isotropic coverage of the landscape.
+- $w_{ij}(t)$ is the hit rate along segment $j$ — directly analogous to the cover estimator of Canfield (1941).
+- The six segments at 60° intervals provide near-isotropic directional sampling of the landscape around each cell.
 
 **Compositional-configurational divergence:**
 
@@ -220,14 +258,14 @@ Comparison structured across three explicit dimensions:
 
 **Variable selection — why divergence and not EII directly:**
 
-The EII of a cell is computed from its perimeter, which is shared with neighboring cells. This means adjacent cells sample overlapping sets of raster pixels when computing their respective EII values. As a consequence, the EII series of neighboring cells are structurally correlated by construction — even in a random landscape, adjacent cells would show similar EII values because they share border pixels.
+Although the EII of each cell is computed independently from its own perimeter (see Section 3.4), neighboring cells sample adjacent and partially overlapping sets of raster pixels along their shared boundary segment. This creates structural spatial correlation in the EII values of adjacent cells — even in a random landscape, neighboring cells would show similar EII values simply because they sample the same pixels from opposite sides of the same boundary.
 
-Computing Moran's I directly on EII would therefore produce inflated autocorrelation coefficients that reflect geometric overlap rather than true spatial clustering of landscape states.
+Computing Moran's I directly on EII would therefore produce inflated autocorrelation coefficients that reflect geometric overlap in the sampling design rather than true spatial clustering of landscape states. This is a consequence of the shared-boundary property of the hexagonal grid, not of any ecological pattern.
 
-The compositional-configurational divergence variable $\delta_i(t) = w_i(t) - A_i(t)$ does not share this problem. The divergence between interior composition and interface connectivity is an emergent property of each cell individually: it depends on the specific spatial arrangement of habitat relative to both the interior and the boundary of that cell. Two neighboring cells may have similar EII values (because they share pixels) but very different divergence values (because their interior compositions differ). Moran's I on the divergence variable tests whether cells in similar landscape states — where composition and connectivity are misaligned — tend to be spatially clustered, which is the ecologically relevant question.
+The compositional-configurational divergence $\delta_i(t) = w_i(t) - A_i(t)$ is not subject to this artifact. The divergence between interface connectivity and interior composition depends on the specific arrangement of habitat relative to both the interior and the boundary of each individual cell. Two neighboring cells may have similar EII values (because they share boundary pixels) but very different divergence values (because their interior compositions differ independently). Moran's I on the divergence variable tests whether cells in similar landscape states — where composition and interface connectivity are misaligned — tend to be spatially clustered, which is the ecologically relevant question and is free from the structural correlation artifact.
 
 **Implementation:**
-- Variable: binary classification — divergent (Type I or Type II = 1) vs. coupled (Coupled-High or Coupled-Low = 0) — per cell per year.
+- Variable: binary classification — divergent (Type I or Type II = 1) vs. coupled (Coupled-High or Coupled-Low = 0) per cell per year.
 - Spatial weights: Queen contiguity (cells sharing at least one vertex), row-standardized.
 - Test: Global Moran's I with 99 permutations for significance assessment.
 - Applied annually to the full 1985–2024 series.
@@ -239,6 +277,47 @@ The compositional-configurational divergence variable $\delta_i(t) = w_i(t) - A_
 ### 3.10 Continuous divergence analysis (δ)
 - Annual distribution of $\delta_i(t)$ across cells.
 - Metrics: mean, median, SD, P10, P25, P75, P90; % cells with δ < 0, δ > 0, |δ| < 0.05.
+
+### 3.11 Segment decomposition analysis
+
+This analysis uses the six individual segment values $w_{ij}$ rather than the aggregated EII. It characterizes the **directional structure of interface connectivity** for each cell, independently of the area metric.
+
+**3.11.1 — Connectivity anisotropy (Property 3)**
+
+For each cell $i$ and year $t$:
+
+$$\text{Aniso}_i(t) = \text{SD}(w_{i1}, w_{i2}, w_{i3}, w_{i4}, w_{i5}, w_{i6})$$
+
+- $\text{Aniso}_i = 0$: all six sides have identical connectivity — perfectly isotropic cell.
+- High $\text{Aniso}_i$: connectivity is concentrated in specific directions — the cell lies at a directional landscape feature (corridor, edge, ecotone).
+
+Outputs:
+- Spatial map of mean anisotropy per cell across the full series.
+- Annual mean anisotropy for the domain — temporal trend.
+- Cells with persistently high anisotropy across years identify stable directional landscape features.
+
+**3.11.2 — Directional gradients (Property 4)**
+
+The six segments of a hexagon form three pairs of geometrically opposite sides. Each pair defines a directional axis. For each axis $k \in \{1, 2, 3\}$:
+
+$$G_{ik}(t) = w_{ij}(t) - w_{i,j+3}(t)$$
+
+where $j$ and $j+3$ are opposite segments on axis $k$.
+
+- $G_{ik} > 0$: connectivity higher on the "positive" side of axis $k$ than on the opposite side.
+- $G_{ik} = 0$: symmetric connectivity along axis $k$.
+- $G_{ik} < 0$: connectivity higher on the "negative" side.
+
+The direction of maximum gradient identifies the **orientation of the connectivity transition** at each cell — for example, a cell at an active deforestation front advancing from south to north would show $G_{i,\text{N-S}} < 0$ (connectivity declining towards the south).
+
+Outputs:
+- Three gradient maps per year (one per axis).
+- Vector field of dominant gradient direction per cell — reveals large-scale orientation of transformation fronts.
+- Temporal change in gradient magnitude: cells where gradients intensify over time are at advancing transformation frontiers.
+
+**Note on independence from Area:**
+
+Both analyses (3.11.1 and 3.11.2) use exclusively the six segment values $w_{ij}$ with no reference to the within-cell area metric $A_i$. They characterize the geometric structure of interface connectivity as an independent dimension of landscape state — consistent with the goal of demonstrating the informational value of the EII beyond its relationship with composition metrics.
 
 ---
 
@@ -340,10 +419,6 @@ The compositional-configurational divergence variable $\delta_i(t) = w_i(t) - A_
 - MapBiomas. (2024). Collection [X] of the Annual Land Use and Land Cover Maps of Brazil. *mapbiomas.org*.
 - McGarigal, K., & Marks, B.J. (1995). *FRAGSTATS: Spatial Pattern Analysis Program for Quantifying Landscape Structure*. USDA Forest Service.
 - Openshaw, S. (1984). *The Modifiable Areal Unit Problem*. Geo Books, Norwich.
-
----
-
-*Document maintained as part of the EII project. Update after each analytical phase is completed.*
 
 ---
 
