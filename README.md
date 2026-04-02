@@ -2,25 +2,33 @@
 ### A systematic transect-based metric for landscape interface connectivity
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status: Active Development](https://img.shields.io/badge/Status-Active%20Development-blue)]()
+[![Status: Phase 3 — Core Analyses](https://img.shields.io/badge/Status-Phase%203%20In%20Progress-orange)]()
 
 ---
 
 ## Overview
 
-The **Edge Interception Index (EII)** is a landscape connectivity metric derived from 
-the borders of a regular hexagonal grid applied to binary habitat rasters. Each cell 
-border is treated as a systematic linear transect — analogous to the line intercept 
-method in vegetation ecology (Canfield 1941) — and the proportion of the perimeter 
-that intersects natural habitat defines the EII.
+The **Edge Interception Index (EII)** is a landscape connectivity metric that reinterprets
+the borders of a regular hexagonal grid as a spatially exhaustive set of systematic
+transects — directly analogous to the line intercept method in vegetation ecology
+(Canfield 1941). The proportion of each cell perimeter that intersects natural habitat
+defines the EII, providing a measure of **interface connectivity** complementary to
+within-cell area metrics.
 
-This approach measures **interface connectivity**: how permeable the contact between 
-adjacent landscape units is, rather than how much habitat exists within each unit.
+**Key distinction:** Area sampling (polygon interior) and line sampling (polygon
+perimeter) are complementary estimators of landscape structure. Area estimates
+*composition* (what is inside a cell); EII estimates *interface connectivity* (how
+permeable the cell boundary is). Their joint distribution characterizes landscape
+state more fully than either alone.
 
-**Study area:** Brazilian Cerrado  
-**Input data:** MapBiomas binary rasters (natural vegetation vs. non-natural), 30 m resolution  
-**Temporal coverage:** 1985–2024 (annual)  
-**Spatial units:** Hexagonal grid (~19,183 cells)
+**Study domain:** Fixed rectangle of 1,500 × 1,500 km in central Brazil
+(ESRI:102033 Albers Equal Area Conic), encompassing the core Cerrado, southern Amazon
+deforestation frontier, northern Pantanal, and Cerrado–Caatinga transition zone.
+
+**Input data:** MapBiomas binary rasters (natural vegetation vs. non-natural), 30 m
+resolution, 1985–2024 (annual)
+
+**Primary grid:** Hexagonal, 20,000 ha (~15.2 km side), 11,500 cells
 
 ---
 
@@ -30,33 +38,72 @@ For each cell *i* at time *t*, two metrics are computed:
 
 **Within-cell area** — proportion of natural habitat pixels inside the cell:
 
-$$A_i(t) = \frac{\text{natural pixels inside cell } i}{\text{total valid pixels inside cell } i}$$
+$$A_i(t) = \frac{\sum_{p \in C_i} \mathbf{1}[r_p(t) = 1]}{|C_i|}$$
 
-**Edge Interception Index** — proportion of the cell perimeter intercepting natural habitat:
+**Edge Interception Index** — proportion of the cell perimeter intercepting natural
+habitat:
 
 $$w_i(t) = \frac{L_i^{\text{nat}}(t)}{P_i^{\text{obs}}(t)}$$
 
-where $L_i^{\text{nat}}$ is the perimeter length intersecting natural habitat and 
-$P_i^{\text{obs}}$ is the total observable perimeter (excluding nodata pixels).
+**Continuous divergence** — difference between interface connectivity and interior
+composition:
 
-Both metrics range from 0 to 1. Their **joint distribution** (Area × EII) reveals 
-landscape states that area-based metrics alone cannot detect — particularly decoupling 
-states where interior habitat and interface connectivity diverge.
+$$\delta_i(t) = w_i(t) - A_i(t)$$
+
+$\delta > 0$: interface more connected than interior composition suggests
+$\delta < 0$: interface more degraded than interior composition suggests
+
+The four landscape states in the Area × EII space:
+
+| State | Area | EII | Interpretation |
+|---|---|---|---|
+| Coupled-High | High | High | Intact: abundant interior habitat, connected interface |
+| Coupled-Low | Low | Low | Degraded: scarce interior habitat, isolated interface |
+| Type I | High | Low | Interior preserved, interface degraded |
+| Type II | Low | High | Interior lost, interface still connected |
+
+---
+
+## Key results (Phases 1–2 complete)
+
+**Grid configuration sensitivity (Phase 1):**
+- EII estimates are robust to grid placement: mean range < 0.005 across 25 jitter
+  realizations; CV < 0.003
+- Scale effect negligible: mean EII differs < 0.001 across 10,000 / 20,000 / 40,000 ha
+- Shape effect negligible at biome scale: HEX-20 and SQ-20 distributions differ < 0.008
+
+**Annual time series 1985–2024 (Phase 2):**
+- EII mean declined from 0.858 (1985) to 0.643 (2024); Area mean from 0.859 to 0.644
+- Coupled-High cells: 91.5% → 57.6% (−33.9 pp over 40 years)
+- Divergent cells (Type I + II): 2.5% → 8.4%; spatially clustered in all years
+  (Moran's I = 0.094–0.136, p < 0.01 throughout)
+- Negative tail of δ widened: P10 from −0.061 to −0.093; % cells with |δ| < 0.05
+  fell from 75.8% to 58.5%
 
 ---
 
 ## Repository structure
+
 ```
 eii-landscape-metric/
 ├── notebooks/
-│   └── continuidade_refatorado.ipynb   # Main EII extraction pipeline
+│   ├── continuidade_refatorado.ipynb        # Original EII extraction pipeline
+│   ├── jitter_grid_generation.ipynb         # Generate 25 jitter grids
+│   ├── phase1_sensitivity_analysis_v2.ipynb # MAUP sensitivity (shape, scale, jitter)
+│   └── phase2_annual_pipeline.ipynb         # Annual EII + Area + divergence analysis
 ├── data/
-│   └── indices_bordas_EIF_consolidado.csv  # Consolidated EII dataset (OBS 1985–2020)
+│   ├── indices_bordas_EIF_consolidado.csv   # OBS baseline dataset (legacy)
+│   ├── eii_HEX20_annual.csv                 # EII — 11,500 cells × 40 years
+│   ├── area_HEX20_annual.csv                # Area — 11,500 cells × 40 years
+│   ├── annual_states.csv                    # Landscape state frequencies 1985–2024
+│   ├── delta_annual_summary.csv             # δ = EII − Area distribution by year
+│   └── moran_annual.csv                     # Moran's I for divergent states by year
 ├── docs/
-│   ├── paper_outline_EII.md            # Full paper outline
-│   └── analysis_roadmap_EII.md         # Ordered analysis plan with dependencies
+│   ├── paper_outline_EII.md                 # Full paper outline with results
+│   ├── analysis_roadmap_EII.md              # Analysis plan with status tracking
+│   └── jitter_realizations_summary.csv      # 25 jitter grid specifications
 ├── config/
-│   └── config_template.py              # Configuration template (edit before running)
+│   └── config_template.py                   # Configuration template
 ├── .gitignore
 ├── LICENSE
 └── README.md
@@ -67,6 +114,7 @@ eii-landscape-metric/
 ## Getting started
 
 ### Requirements
+
 ```
 Python >= 3.10
 rasterstats
@@ -75,23 +123,32 @@ rasterio
 pandas
 numpy
 matplotlib
+libpysal
+esda
 ```
 
 Install all dependencies:
+
 ```bash
-pip install rasterstats geopandas rasterio pandas numpy matplotlib
+pip install rasterstats geopandas rasterio pandas numpy matplotlib libpysal esda
 ```
+
+### Critical note on nodata encoding
+
+MapBiomas binary rasters declare `nodata=0` in file metadata, but `0` encodes
+non-natural vegetation — a valid value that must be counted in the denominator.
+True outside-domain pixels are encoded as `255`. All notebooks use `nodata=255`
+hardcoded. Do not override this without verifying the raster encoding.
 
 ### Running the pipeline
 
 1. Clone this repository
-2. Copy `config/config_template.py` and edit the paths to match your local data
-3. Open `notebooks/continuidade_refatorado.ipynb` in Jupyter
-4. Edit **only** the configuration cell (Section 1) with your paths
-5. Run all cells sequentially
-
-The notebook includes a **checkpoint system**: if interrupted, rerunning will resume 
-from the last completed raster rather than starting over.
+2. Copy `config/config_template.py` and edit paths
+3. Open notebooks in order: `continuidade_refatorado` → `jitter_grid_generation`
+   → `phase1_sensitivity_analysis_v2` → `phase2_annual_pipeline`
+4. Edit only the configuration cell (Section 1) in each notebook
+5. Run all cells sequentially — checkpoint system allows safe interruption and
+   resumption
 
 ---
 
@@ -100,30 +157,33 @@ from the last completed raster rather than starting over.
 ### Input (not included — available from MapBiomas)
 
 - Binary rasters: natural vegetation (1) vs. non-natural (0), 30 m resolution
-- Hexagonal grid shapefile (contact authors)
-- Source: [MapBiomas Brazil](https://mapbiomas.org) — Collection 9
+- Hexagonal and square grid shapefiles generated in ArcGIS Pro (Generate Tessellation)
+  using the domain rectangle defined in ESRI:102033
+- Source: [MapBiomas Brazil](https://mapbiomas.org)
 
 ### Output (included in `data/`)
 
-| File | Description | Rows | Columns |
-|---|---|---|---|
-| `indices_bordas_EIF_consolidado.csv` | EII and area metrics per cell, OBS 1985–2020 | 19,183 | 25 |
-
-Column naming convention: `prop1_OBS_YYYY` = EII for observed scenario, year YYYY.
+| File | Description | Dimensions |
+|---|---|---|
+| `eii_HEX20_annual.csv` | EII per cell per year | 11,500 × 41 |
+| `area_HEX20_annual.csv` | Area per cell per year | 11,500 × 41 |
+| `annual_states.csv` | Landscape state frequencies | 40 years × 10 cols |
+| `delta_annual_summary.csv` | δ distribution statistics | 40 years × 11 cols |
+| `moran_annual.csv` | Spatial autocorrelation of divergence | 40 years × 5 cols |
 
 ---
 
 ## Project status
 
-This repository is under active development. Planned analyses:
+| Phase | Description | Status |
+|---|---|---|
+| **Phase 1** | Grid configuration sensitivity (MAUP) | ✅ Complete |
+| **Phase 2** | Full annual time series (1985–2024) | ✅ Complete |
+| **Phase 3** | Core analyses (correlation, matrices, maps, changepoints) | 🔄 In progress |
+| **Phase 4** | Final figures, Methods writing, reproducibility package | 🔲 Pending |
 
-- [x] EII extraction pipeline (OBS baseline 1985–2020)
-- [ ] Annual time series (1985–2024)
-- [ ] Grid configuration sensitivity (MAUP: shape, scale, jitter)
-- [ ] Change point detection (Area vs. EII structural breaks)
-- [ ] Scenario comparison (TNC, BAU, GOV — 2030)
-
-See [`docs/analysis_roadmap_EII.md`](docs/analysis_roadmap_EII.md) for the full plan.
+See [`docs/analysis_roadmap_EII.md`](docs/analysis_roadmap_EII.md) for the
+step-by-step plan with status tracking.
 
 ---
 
@@ -131,9 +191,9 @@ See [`docs/analysis_roadmap_EII.md`](docs/analysis_roadmap_EII.md) for the full 
 
 If you use this code or data, please cite:
 
-> Barroso et al. (in preparation). *The Edge Interception Index: a systematic 
-> transect-based metric for landscape interface connectivity and its application 
-> to four decades of habitat dynamics in the Brazilian Cerrado.*
+> Barroso et al. (in preparation). *The Edge Interception Index: a systematic
+> transect-based metric for landscape interface connectivity and its application
+> to four decades of habitat dynamics in central Brazil.*
 
 ---
 
@@ -142,6 +202,8 @@ If you use this code or data, please cite:
 This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
 
 ---
+
+
 
 ## Contact
 
