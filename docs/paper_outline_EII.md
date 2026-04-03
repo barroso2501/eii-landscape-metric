@@ -87,7 +87,7 @@ Throughout this document, the term **"compositional-configurational divergence"*
 
 ### 1.7 Contributions
 1. A formal transect-based metric of landscape interface connectivity that adds negligible computational overhead to any existing grid-based workflow, grounded in the line intercept sampling theory of vegetation ecology.
-2. A demonstration that the cell boundary — already present in any grid analysis — contains ecologically independent information: compositional-configurational divergence between Area and EII is spatially structured (Moran's I > 0.09 in all years) and grows progressively over four decades of landscape transformation.
+2. A demonstration that the cell boundary — already present in any grid analysis — contains ecologically independent information: compositional-configurational divergence between Area and EII is spatially structured (Moran's I > 0.09 in all 38 years of the effective analysis period, 1986–2023) and grows progressively over four decades of landscape transformation.
 3. A systematic treatment of the Modifiable Areal Unit Problem (MAUP) as quantifiable sampling variance: when the grid is treated as a sampling device rather than a spatial partition, MAUP becomes a property to characterize rather than a limitation to acknowledge.
 
 ---
@@ -122,11 +122,17 @@ Throughout this document, the term **"compositional-configurational divergence"*
 - All input raster data (MapBiomas, 1985–2024) provide complete coverage of the domain.
 
 ### 3.2 Input data
-- MapBiomas Collection [X], 30 m resolution, 1985–2024.
+- MapBiomas Collection 10.1 (Souza Jr. et al. 2020; MapBiomas 2026), 30 m resolution, 1985–2024.
 - Binarization: natural vegetation (value 1) vs. non-natural (value 0); outside-domain pixels encoded as 255 (nodata).
-- Annual time series: 40 raster layers.
+- Annual time series: 40 raster layers available; **38 years used in primary analyses** (1986–2023; see below).
 - **Technical note on nodata encoding:** raster metadata declares nodata=0, but 0 = non-natural vegetation (valid data). All EII and Area calculations use nodata=255 to correctly include non-natural pixels in the denominator.
 - Rationale for binary classification: focus on habitat presence/absence rather than vegetation type diversity.
+
+**Exclusion of boundary years (1985 and 2024):**
+
+The MapBiomas post-classification filtering pipeline applies temporal moving-window filters (3-, 4-, and 5-year windows) to remove spurious transitions between land cover classes. At the boundaries of the time series, these windows operate with truncated information — years before 1985 and after 2024 do not exist — reducing filter effectiveness. Several correction rules are explicitly restricted to years 1986–2023 to avoid this artifact: *"These rules are applied only in the middle of the series (1986–2023) to avoid border years"* (MapBiomas 2026, ATBD Collection 10.1, Section 3.4.3.3). As a consequence, the 1985 and 2024 maps contain higher transitional noise relative to intermediate years.
+
+Both years are retained in the dataset and their values are reported separately for reference, but primary analyses use the effective period **1986–2023 (38 annual maps)**. The values for 1985 and 2024 differ only marginally from their adjacent years (< 1 percentage point in all aggregated metrics), confirming that the exclusion does not introduce discontinuities in the reported trends.
 
 ### 3.3 Grid design
 
@@ -328,13 +334,13 @@ Both analyses (3.11.1 and 3.11.2) use exclusively the six segment values $w_{ij}
 - Correlation between $A_i(t)$ and $w_i(t)$ across cells and time periods.
 - Distribution of $\delta_i(t)$: % cells near zero, widening of distribution over time.
 - Frequency of Type I and Type II states across the time series.
-- *Preliminary result: in 1985, 75.8% of cells had |δ| < 0.05; by 2024, this fell to 58.5% — the domain became progressively more heterogeneous in the composition-configuration space.*
+- *Preliminary result (effective period 1986–2023): in 1986, 75.4% of cells had |δ| < 0.05; by 2023, this fell to 58.7% — the domain became progressively more heterogeneous in the composition-configuration space across 38 years.*
 
 ### 4.2 Compositional-configurational divergence dynamics (RQ2)
-- Annual flux of the four landscape states (1985–2024).
-- *Preliminary result: Coupled-High declined from 91.5% to 57.6%; total Type I + Type II increased from 2.5% to 8.4%.*
-- Temporal trend of δ: negative tail (P10) widening from −0.061 to −0.093; % cells with δ < 0 increasing from 41.8% to 46.9%.
-- Moran's I: *significant in all 40 years (p < 0.01); I ranging from 0.094 to 0.136 — divergent states are spatially clustered throughout the series.*
+- Annual flux of the four landscape states (1986–2023).
+- *Preliminary result (1986→2023): Coupled-High declined from 90.8% to 58.4%; Coupled-Low increased from 6.5% to 33.4%; total Type I + Type II increased from 2.8% to 8.2%.*
+- Temporal trend of δ: negative tail (P10) widening from −0.060 (1986) to −0.094 (2023); % cells with δ < 0 increasing from 41.7% to 47.0%.
+- Moran's I: *significant in all 38 years of the effective period (p < 0.01); I ranging from 0.094 to 0.136 — divergent states are spatially clustered throughout the series.*
 - Cumulative divergence trace: cells ever in Type I or Type II state across the full series.
 
 ### 4.3 Domain-scale dynamics — snapshot analysis (RQ2)
@@ -412,7 +418,7 @@ Both analyses (3.11.1 and 3.11.2) use exclusively the six segment values $w_{ij}
 
 - The Edge Interception Index, grounded in the line intercept sampling theory of vegetation ecology, provides an efficient and interpretable metric of landscape interface connectivity from any binary raster time series.
 - Area and EII capture complementary dimensions — composition and interface connectivity — and their divergence characterizes landscape states that area metrics cannot distinguish.
-- Applied to 40 years of habitat dynamics in central Brazil, EII reveals a progressive widening of compositional-configurational divergence, spatially structured along active transformation frontiers (Moran's I significant in all years).
+- Applied to 38 years of habitat dynamics in central Brazil (1986–2023), EII reveals a progressive widening of compositional-configurational divergence, spatially structured along active transformation frontiers (Moran's I significant in all years, I = 0.094–0.136).
 - MAUP effects are quantifiable as sampling variance (CV < 0.003) and the method is robust across shape, scale, and placement choices.
 
 ---
@@ -442,9 +448,10 @@ Both analyses (3.11.1 and 3.11.2) use exclusively the six segment values $w_{ij}
 
 ## Status at freeze
 
-**Frozen:** 2026-04-02  
-**Analyses complete:** Phases 1 and 2 (MAUP sensitivity, annual time series, divergence analysis, Moran's I).  
-**Pending before submission:** Phase 3 step 3.5 (change point detection → Section 4.5); segment decomposition analysis (→ Section 4.6); final figures (→ Sections 4.1–4.7); Methods writing.  
+**Frozen:** 2026-04-02 (updated 2026-04-03 — boundary year exclusion documented)
+**Effective analysis period:** 1986–2023 (38 years; 1985 and 2024 excluded per MapBiomas ATBD Section 3.4.3.3)
+**Analyses complete:** Phases 1 and 2 (MAUP sensitivity, annual time series, divergence analysis, Moran's I, segment decomposition).
+**Pending before submission:** Phase 3 step 3.5 (change point detection → Section 4.5); segment decomposition analysis results (→ Section 4.6); final figures (→ Sections 4.1–4.7); Methods writing.
 **Open parameter:** divergence threshold (0.5 provisional; sensitivity reported in Supplementary S2).
 
 ---
@@ -454,9 +461,11 @@ Both analyses (3.11.1 and 3.11.2) use exclusively the six segment values $w_{ij}
 - Canfield, R.H. (1941). Application of the line intercept method in sampling range vegetation. *Journal of Forestry*, 39(4), 388–394.
 - Killick, R., Fearnhead, P., & Eckley, I.A. (2012). Optimal detection of changepoints with a linear computational cost. *Journal of the American Statistical Association*, 107(500), 1590–1598.
 - Levy, E.B., & Madden, E.A. (1933). The point method of pasture analysis. *New Zealand Journal of Agriculture*, 46(5), 267–279.
-- MapBiomas. (2024). Collection [X] of the Annual Land Use and Land Cover Maps of Brazil. *mapbiomas.org*.
+- MapBiomas. (2026). *Algorithm Theoretical Basis Document (ATBD) — MapBiomas Collection 10.1, Version 1*. February 2026. mapbiomas.org.
+- MapBiomas. (2024). Collection 10.1 of the Annual Land Use and Land Cover Maps of Brazil. *mapbiomas.org*.
 - McGarigal, K., & Marks, B.J. (1995). *FRAGSTATS: Spatial Pattern Analysis Program for Quantifying Landscape Structure*. USDA Forest Service.
 - Openshaw, S. (1984). *The Modifiable Areal Unit Problem*. Geo Books, Norwich.
+- Souza Jr., C.M. et al. (2020). Reconstructing three decades of land use and land cover changes in Brazilian biomes with Landsat archive and Earth Engine. *Remote Sensing*, 12(17), 2735.
 
 ---
 
