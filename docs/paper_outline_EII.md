@@ -331,10 +331,25 @@ Both analyses (3.11.1 and 3.11.2) use exclusively the six segment values $w_{ij}
 ## 4. Results
 
 ### 4.1 EII as a complementary information source (RQ1)
-- Correlation between $A_i(t)$ and $w_i(t)$ across cells and time periods.
-- Distribution of $\delta_i(t)$: % cells near zero, widening of distribution over time.
-- Frequency of Type I and Type II states across the time series.
-- *Preliminary result (effective period 1986–2023): in 1986, 75.4% of cells had |δ| < 0.05; by 2023, this fell to 58.7% — the domain became progressively more heterogeneous in the composition-configuration space across 38 years.*
+
+**EII × Area correlation:**
+- Pearson r stable at 0.960–0.966 across all 38 years (1986–2023); Spearman ρ follows closely.
+- R² ranges from 0.922 (1986) to 0.933 (peak ~2000–2004) to 0.928 (2023) — Area explains ~92–93% of variance in EII throughout the series.
+- Variance in EII not explained by Area (1−R²): 7.7% in 1986, minimum ~6.7% in 2000–2004, 7.2% in 2023. The U-shaped trajectory is ecologically interpretable: at peak conversion (2000–2005), cells losing area were losing EII proportionally; before and after, the relationship is more heterogeneous.
+- With N=11,500 cells, 7% unexplained variance represents ~800 cells per year where EII carries information structurally distinct from Area.
+
+**Residual analysis:**
+
+| Year | Residual SD | \|resid\| > 0.05 | \|resid\| > 0.10 |
+|---|---|---|---|
+| 1986 | 0.053 | 24.1% of cells | 8.0% of cells |
+| 2023 | 0.074 | 41.0% of cells | 16.4% of cells |
+
+Cells where EII provides substantial additional information (|residual| > 0.10) doubled from 8% to 16% between 1986 and 2023 — direct evidence that the informational value of EII relative to Area grew over the study period as landscape heterogeneity increased.
+
+**Divergence distribution:**
+- In 1986, 75.4% of cells had |δ| < 0.05; by 2023, this fell to 58.7% — the domain became progressively more heterogeneous in the composition-configuration space.
+- Frequency of Type I and Type II states grew from 2.8% (1986) to 8.2% (2023).
 
 ### 4.2 Compositional-configurational divergence dynamics (RQ2)
 - Annual flux of the four landscape states (1986–2023).
@@ -344,8 +359,30 @@ Both analyses (3.11.1 and 3.11.2) use exclusively the six segment values $w_{ij}
 - Cumulative divergence trace: cells ever in Type I or Type II state across the full series.
 
 ### 4.3 Domain-scale dynamics — snapshot analysis (RQ2)
-- 5×5 Area × EII frequency matrices for anchored snapshots.
-- Difference matrices between periods.
+
+**5×5 Area × EII frequency matrices — observed results:**
+
+| Year | Coupled-High (80-100% both) | Coupled-Low (0-40% both) | Diagonal mass | Off-diagonal |
+|---|---|---|---|---|
+| 1986 | 69.8% | ~0.7% | ~88% | ~12% |
+| 1995 | ~56.1% | ~1.3% | ~82% | ~18% |
+| 2004 | ~63.5% | ~3.0% | ~80% | ~20% |
+| 2012 | ~37.7% | ~4.1% | ~72% | ~28% |
+| 2020 | ~33.4% | ~5.3% | ~68% | ~32% |
+| 2023 | ~30.7% | ~6.5% | ~67% | ~33% |
+
+*Note: full 5×5 matrices with all 25 cell values available in Supplementary S1.*
+
+The dominant pattern is a progressive shift of mass from the top-right corner (Coupled-High — intact landscape) toward the bottom-left (Coupled-Low — degraded landscape) and toward off-diagonal cells (compositional-configurational divergence). The 2004 matrix shows a transient concentration pattern during peak conversion, followed by continued redistribution toward lower ranges.
+
+**Difference matrices between consecutive periods:**
+- 1986→1995: largest losses in Coupled-High; first appearance of off-diagonal mass.
+- 1995→2004: continuation of mass transfer toward intermediate and lower bins.
+- 2004→2012: acceleration — off-diagonal mass and Coupled-Low grow substantially.
+- 2012→2020 and 2020→2023: slower rate of change, consistent with post-PPCDAM landscape stabilization.
+
+**Temporal interval sensitivity:**
+Snapshot years 1986 and 2023 are identical under both 5-year and 10-year sampling schemes (by definition). The intermediate trajectories are consistent across sampling intervals — the choice of 5-year vs. 10-year snapshots does not materially alter the interpretation of matrix evolution. Reported in Supplementary S2.
 
 ### 4.4 Grid configuration sensitivity (RQ3)
 - Shape: HEX-20 vs. SQ-20 — three-dimensional comparison (convergence, estimator variance, isotropy).
@@ -417,7 +454,7 @@ The 1,500 × 1,500 km rectangular domain encompasses approximately 50% Cerrado a
 The segment-level EII (mean of six components) differs from the full-perimeter EII (Phase 2) by a mean of 0.003 ± 0.005 across all cells and years. This systematic offset is explained by the double-counting of the six vertex pixels — one per hexagonal vertex — which are captured by both adjacent segments when geometries are computed separately. This is a known geometric property of the decomposition, documented here for reproducibility. The full-perimeter EII (Phase 2) is used as the primary aggregated metric throughout the paper; segment values are used exclusively for directional analyses (Sections 4.6.1 and 4.6.2).
 
 ### 4.7 Temporal interval sensitivity (RQ3)
-- Comparison of 5-year vs. 10-year snapshot matrices.
+- Snapshot years 1986 and 2023 are identical under both 5-year and 10-year sampling intervals by definition. Intermediate trajectories are consistent across schemes — the choice of sampling interval does not materially alter the interpretation of Area × EII matrix evolution. Full comparison reported in Supplementary S2.
 
 ---
 
@@ -491,10 +528,19 @@ The segment-level EII (mean of six components) differs from the full-perimeter E
 
 ## Status at freeze
 
-**Frozen:** 2026-04-02 (updated 2026-04-03 — change point detection complete)
+**FROZEN — 2026-04-03 (final)**
 **Effective analysis period:** 1986–2023 (38 years; 1985 and 2024 excluded per MapBiomas ATBD Section 3.4.3.3)
-**Analyses complete:** Phases 1, 2, and 3 (MAUP sensitivity, annual time series, divergence analysis, Moran's I, segment decomposition, change point detection).
-**Pending before submission:** Spatial maps for 1986 and 2023 (segment decomposition); final publication-quality figures (Figs. 1–7); Methods section writing.
+**All analyses complete:**
+- Phase 1: MAUP sensitivity (shape, scale, jitter)
+- Phase 2: Annual EII + Area time series, divergence analysis (δ, states, Moran's I)
+- Phase 3: Segment decomposition (anisotropy, directional gradients), change point detection (Mode A + B, penalty sensitivity)
+- Closing analyses: EII × Area correlation, 5×5 frequency matrices, temporal interval sensitivity
+
+**Pending before submission (writing and figures only):**
+- Sections 3.x Methods writing (priority: 3.4 EII formalization)
+- Publication-quality figures (Figs. 1–7)
+- Abstract (write last)
+
 **Open parameter:** divergence threshold (0.5 provisional; sensitivity reported in Supplementary S2).
 
 ---
