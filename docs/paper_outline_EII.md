@@ -38,10 +38,12 @@ Throughout this document, the term **"compositional-configurational divergence"*
 
 | Quadrant | Area | EII | Landscape interpretation |
 |---|---|---|---|
-| Coupled-High | High | High | Intact: abundant interior habitat, connected interface |
-| Coupled-Low | Low | Low | Degraded: scarce interior habitat, isolated interface |
-| Type I | High | Low | Interior preserved, interface degraded |
-| Type II | Low | High | Interior lost, interface still connected |
+| Concordant-High | High | High | Intact: abundant interior habitat, connected interface — both dimensions aligned at high values |
+| Concordant-Low | Low | Low | Degraded: scarce interior habitat, isolated interface — both dimensions aligned at low values |
+| Type I | High | Low | Interior preserved, interface degraded — composition exceeds interface connectivity |
+| Type II | Low | High | Interior lost, interface still connected — interface connectivity exceeds composition |
+
+*Note on terminology: "Concordant" denotes alignment between the composition and interface connectivity dimensions — not a dynamic coupling process. Type I and Type II are divergent states where the two dimensions separate. The term "compositional-configurational divergence" refers to the overall phenomenon of separation between the two dimensions across space and time.*
 
 ---
 
@@ -272,7 +274,7 @@ Computing Moran's I directly on EII would therefore produce inflated autocorrela
 The compositional-configurational divergence $\delta_i(t) = w_i(t) - A_i(t)$ is not subject to this artifact. The divergence between interface connectivity and interior composition depends on the specific arrangement of habitat relative to both the interior and the boundary of each individual cell. Two neighboring cells may have similar EII values (because they share boundary pixels) but very different divergence values (because their interior compositions differ independently). Moran's I on the divergence variable tests whether cells in similar landscape states — where composition and interface connectivity are misaligned — tend to be spatially clustered, which is the ecologically relevant question and is free from the structural correlation artifact.
 
 **Implementation:**
-- Variable: binary classification — divergent (Type I or Type II = 1) vs. coupled (Coupled-High or Coupled-Low = 0) per cell per year.
+- Variable: binary classification — divergent (Type I or Type II = 1) vs. concordant (Concordant-High or Concordant-Low = 0) per cell per year.
 - Spatial weights: Queen contiguity (cells sharing at least one vertex), row-standardized.
 - Test: Global Moran's I with 99 permutations for significance assessment.
 - Applied annually to the full 1985–2024 series.
@@ -353,7 +355,7 @@ Cells where EII provides substantial additional information (|residual| > 0.10) 
 
 ### 4.2 Compositional-configurational divergence dynamics (RQ2)
 - Annual flux of the four landscape states (1986–2023).
-- *Preliminary result (1986→2023): Coupled-High declined from 90.8% to 58.4%; Coupled-Low increased from 6.5% to 33.4%; total Type I + Type II increased from 2.8% to 8.2%.*
+- *Preliminary result (1986→2023): Concordant-High declined from 90.8% to 58.4%; Concordant-Low increased from 6.5% to 33.4%; total Type I + Type II increased from 2.8% to 8.2%.*
 - Temporal trend of δ: negative tail (P10) widening from −0.060 (1986) to −0.094 (2023); % cells with δ < 0 increasing from 41.7% to 47.0%.
 - Moran's I: *significant in all 38 years of the effective period (p < 0.01); I ranging from 0.094 to 0.136 — divergent states are spatially clustered throughout the series.*
 - Cumulative divergence trace: cells ever in Type I or Type II state across the full series.
@@ -362,7 +364,7 @@ Cells where EII provides substantial additional information (|residual| > 0.10) 
 
 **5×5 Area × EII frequency matrices — observed results:**
 
-| Year | Coupled-High (80-100% both) | Coupled-Low (0-40% both) | Diagonal mass | Off-diagonal |
+| Year | Concordant-High (80-100% both) | Concordant-Low (0-40% both) | Diagonal mass | Off-diagonal |
 |---|---|---|---|---|
 | 1986 | 69.8% | ~0.7% | ~88% | ~12% |
 | 1995 | ~56.1% | ~1.3% | ~82% | ~18% |
@@ -373,12 +375,12 @@ Cells where EII provides substantial additional information (|residual| > 0.10) 
 
 *Note: full 5×5 matrices with all 25 cell values available in Supplementary S1.*
 
-The dominant pattern is a progressive shift of mass from the top-right corner (Coupled-High — intact landscape) toward the bottom-left (Coupled-Low — degraded landscape) and toward off-diagonal cells (compositional-configurational divergence). The 2004 matrix shows a transient concentration pattern during peak conversion, followed by continued redistribution toward lower ranges.
+The dominant pattern is a progressive shift of mass from the top-right corner (Concordant-High — both composition and interface connectivity aligned at high values, intact landscape) toward the bottom-left (Concordant-Low — both dimensions aligned at low values, degraded landscape) and toward off-diagonal regions (Type I and Type II — compositional-configurational divergence, where the two dimensions separate in ecologically distinct ways). The 2004 matrix shows a transient concentration pattern during peak conversion, followed by continued redistribution toward lower ranges.
 
 **Difference matrices between consecutive periods:**
-- 1986→1995: largest losses in Coupled-High; first appearance of off-diagonal mass.
+- 1986→1995: largest losses in Concordant-High; first appearance of off-diagonal mass.
 - 1995→2004: continuation of mass transfer toward intermediate and lower bins.
-- 2004→2012: acceleration — off-diagonal mass and Coupled-Low grow substantially.
+- 2004→2012: acceleration — off-diagonal mass and Concordant-Low grow substantially.
 - 2012→2020 and 2020→2023: slower rate of change, consistent with post-PPCDAM landscape stabilization.
 
 **Temporal interval sensitivity:**
@@ -460,11 +462,17 @@ The segment-level EII (mean of six components) differs from the full-perimeter E
 
 ## 5. Discussion
 
-### 5.1 EII as a compositional-configurational divergence detector
-- Area and EII measure different dimensions of landscape structure: composition (interior) and interface connectivity (boundary). Their divergence is not anomalous but informative.
-- Type I cells (high area, low EII): interior habitat preserved but boundary isolation already advanced — potential matrix-surrounded remnants.
-- Type II cells (low area, high EII): interior largely converted but still embedded in a connected matrix — landscapes in early-stage conversion.
-- Both types increase over time and are spatially clustered (Moran's I > 0.09 throughout), confirming that divergence is not noise but a structured spatial signal associated with active transformation frontiers.
+### 5.1 EII adds the interface connectivity dimension to landscape characterization
+
+The central contribution of EII is not the detection of "decoupling" — it is the addition of a second, structurally independent dimension to landscape characterization. Area metrics describe interior composition; EII describes how permeable the cell boundary is to habitat continuity. Together they define a two-dimensional composition × configuration space that neither metric spans alone.
+
+The four regions of this space have ecologically distinct interpretations:
+- *Concordant-High* cells (high composition, high interface connectivity): intact landscapes where both dimensions are aligned — no divergence between what is inside and what the interface communicates.
+- *Concordant-Low* cells (low composition, low interface connectivity): degraded landscapes where both dimensions are aligned at low values — interior loss and interface isolation have advanced together.
+- *Type I* cells (high composition, low interface connectivity): landscapes where interior habitat persists but the interface has already been isolated — potential matrix-surrounded remnants where area metrics would not yet signal alarm.
+- *Type II* cells (low composition, high interface connectivity): landscapes in early-stage conversion where the interior is largely gone but the cell remains embedded in a connected matrix — area metrics would classify these as degraded, but EII reveals residual interface connectivity.
+
+The ecological significance of this two-dimensional characterization is that landscape states which appear identical to area metrics alone — cells with the same proportion of natural habitat — can be ecologically distinct: one may be connected to surrounding habitat, the other already isolated. EII makes this distinction visible. Both Type I and Type II states increase over time and are spatially clustered (Moran's I > 0.09 throughout), confirming that compositional-configurational divergence is not noise but a structured spatial signal associated with active transformation frontiers.
 
 ### 5.2 The δ signal and its ecological interpretation
 - The negative tail of the δ distribution widens progressively — interface connectivity degrades faster than interior area in a growing fraction of cells.
