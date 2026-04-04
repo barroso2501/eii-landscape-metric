@@ -1,9 +1,9 @@
 # Paper Outline: Edge Interception Index (EII)
-## A Systematic Transect-Based Metric for Landscape Connectivity — Method and Application to the Brazilian Cerrado
+## A Systematic Transect-Based Metric for Landscape Interface Connectivity — Method and Application to Four Decades of Habitat Dynamics in Central Brazil
 
 **Status:** Working outline — not for submission  
-**Target journal (preliminary):** Ecological Indicators  
-**Last updated:** 2026-04-02 (rev. 6 — frozen; segment decomposition formalized; gaps resolved)
+**Target journal:** Methods in Ecology and Evolution (primary) / Landscape Ecology (secondary) / Ecological Indicators (fallback)  
+**Last updated:** 2026-04-04 (rev. 12 — Concordant/divergent terminology; references structured by function; journal hierarchy updated; domain description corrected throughout)
 
 ---
 
@@ -16,7 +16,7 @@
 *"From area to interface: the Edge Interception Index as a low-cost connectivity complement to grid-based landscape monitoring"*
 
 **Conservative fallback (original):**
-*"The Edge Interception Index: a systematic transect-based metric for landscape interface connectivity and its application to four decades of habitat dynamics in the Brazilian Cerrado"*
+*"The Edge Interception Index: a systematic transect-based metric for landscape interface connectivity and its application to four decades of habitat dynamics in central Brazil"*
 
 *Note: title selection deferred to near-submission stage. Primary option is preferred for its directness and positioning.*
 
