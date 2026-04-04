@@ -63,8 +63,8 @@ Complexity: 🟢 Low / 🟡 Medium / 🔴 High.
 **Annual state dynamics (1985 → 2024):**
 | State | 1985 | 2024 | Change |
 |---|---|---|---|
-| Coupled-High | 91.5% | 57.6% | −33.9 pp |
-| Coupled-Low | 6.0% | 34.1% | +28.0 pp |
+| Concordant-High | 91.5% | 57.6% | −33.9 pp |
+| Concordant-Low | 6.0% | 34.1% | +28.0 pp |
 | Type I (high area, low EII) | 0.9% | 4.2% | +3.3 pp |
 | Type II (low area, high EII) | 1.6% | 4.1% | +2.5 pp |
 | Total divergent (I + II) | 2.5% | 8.4% | +5.8 pp |
