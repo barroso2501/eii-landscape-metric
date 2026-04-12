@@ -3,7 +3,7 @@
 
 **Status:** Working outline — not for submission  
 **Target journal:** Methods in Ecology and Evolution (primary) / Landscape Ecology (secondary) / Ecological Indicators (fallback)  
-**Last updated:** 2026-04-09 (rev. 13 — Metric renamed EII → LLI (Landscape Line Intercept); LIS precedent (Ramezani & Holm 2011) incorporated in Sections 1.3, 2.1, and References Block 1)
+**Last updated:** 2026-04-11 (rev. 14 — Section 5.4 rewritten: binary classification and matrix-as-barrier simplifications articulated as explicit design choices with ecological rationale; connection to Paper 2 via graph edge weights formalized)
 
 ---
 
@@ -487,10 +487,28 @@ The ecological significance of this two-dimensional characterization is that lan
 - Regions of high jitter instability — if present — would locate abrupt landscape boundaries, not methodological artifacts.
 - Hexagonal grids are preferable to square grids: lower estimator variance per unit area, greater directional isotropy.
 
-### 5.4 Methodological scope and transferability
-- Raster-agnostic: applicable to any binary habitat map at any resolution.
-- Scalable: checkpoint-based pipeline processes 40 annual rasters in a single run.
-- Limitations: LLI measures perimeter-level connectivity, not functional connectivity; does not account for species-specific dispersal; requires hardcoded nodata handling when raster metadata encoding is ambiguous.
+### 5.4 Methodological scope, simplifications, and transferability
+
+**Scope and transferability:**
+- Raster-agnostic: applicable to any binary habitat map at any resolution and any biome, without species- or taxon-specific parameterization.
+- Scalable: checkpoint-based pipeline processes 40 annual rasters for 11,500 cells in a single run; architecture is unchanged for continental-scale applications.
+- The LLI is a structural metric and should be interpreted as such — it characterizes the spatial configuration of habitat at cell interfaces, not the realized movement of organisms across those interfaces.
+
+**Explicit simplifications — design choices, not omissions:**
+
+The LLI rests on two deliberate simplifications that trade ecological completeness for analytical generality. Both are standard in structural connectivity analysis (Tischendorf & Fahrig 2000; Keeley et al. 2021) and should be stated explicitly rather than treated as unavoidable limitations.
+
+*1. Binary habitat classification.* The binarization of MapBiomas multiclass maps into natural vs. non-natural abstracts a gradient of habitat quality into a presence-absence signal. Secondary regrowth and old-growth forest are treated identically; sparse degraded cerrado and structurally intact cerradão are indistinguishable. This is standard practice in structural connectivity analysis — metrics such as PLAND and COHESION operate on the same logic — and is methodologically defensible when the primary question concerns habitat presence rather than quality. The limitation is real: a landscape where "natural" pixels are predominantly low-quality secondary vegetation will produce the same LLI as one where the same area is old-growth. Users working in systems where intra-class quality gradients are the dominant driver of connectivity should interpret LLI values as a structural upper bound on interface connectivity.
+
+*2. Matrix as barrier.* The LLI treats non-natural pixels as a barrier to habitat continuity — a cell boundary with w(t) = 0 is interpreted as a fully disconnected interface. In practice, many agricultural matrices retain partial permeability: cattle pastures, tree-crop agroforestry, and managed grasslands may support movement for a range of taxa. Functional connectivity is a species-specific property that depends on behavioral responses to matrix structure, dispersal capacity, and resistance gradients — none of which the LLI models. The LLI detects the structural *necessary* condition for connectivity (habitat continuity at the interface) rather than the *sufficient* condition (realized movement). In landscapes where matrix permeability is the dominant driver of connectivity, LLI values should be interpreted accordingly — high w(t) is informative; low w(t) does not guarantee functional isolation.
+
+**Why these simplifications are scientifically defensible:**
+
+The binary structural approach is not a concession but a deliberate positioning of the LLI at the base of a methodological ladder. For structural monitoring at annual temporal resolution and biome-wide spatial extent — the operating regime of this paper — the computational and parameterization demands of functional connectivity models are prohibitive, and species-agnostic structural metrics remain the standard tool (Keeley et al. 2021). The LLI occupies a specific and well-defined niche: a low-cost, annually replicable, raster-native estimator of interface connectivity that requires no inputs beyond the binary habitat map and the grid.
+
+**Connection to future work:**
+
+The LLI segment weights $w_{ij}$ can serve directly as edge weights in a spatial graph — the simplest possible graph-theoretic representation of the landscape. This graph, latent in any hexagonal grid analysis, can be extended in a second analytical step by modulating the edge weights with resistance values derived from matrix land-use types, species dispersal kernels, or remote sensing indices of habitat quality. The LLI thus provides the structural skeleton; functional connectivity analysis adds the ecological flesh. This extension is the core of Paper 2.
 
 ### 5.5 Connections to existing literature
 - Relationship to the line intercept tradition (Canfield 1941; Ramezani & Holm 2011): the LLI transposes to an exhaustive analytical structure what LIS applies as a sampling strategy — the same principle of hit-rate estimation from linear transects, operating at landscape scale.
