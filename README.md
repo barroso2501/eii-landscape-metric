@@ -3,10 +3,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status: Phase 3 — Core Analyses](https://img.shields.io/badge/Status-Phase%203%20In%20Progress-orange)]()
-**Latest release (Concept DOI — always points to the most recent version):**  
 [![DOI](https://zenodo.org/badge/1196502549.svg)](https://doi.org/10.5281/zenodo.19889630)
-**Version used for reproducibility (Version DOI — fixed snapshot):**  
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19889631.svg)](https://doi.org/10.5281/zenodo.19889631)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19889631.svg)]
+(https://doi.org/10.5281/zenodo.19889631)
 ``
 
 ---
